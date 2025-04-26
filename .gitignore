@@ -1,0 +1,6 @@
+.env
+__pycache__/
+*.pyc
+output.mp3
+translation_sample.py
+OpenAI_Realtime_API_Explanation.txt
