@@ -1,4 +1,4 @@
-# AI 실시간 번역 앱 프로젝트
+# Catch Up AI Translator
 
 ## 프로젝트 소개
 이 프로젝트는 Vibe Coding의 AI 번역 앱 개발 프로젝트로, 누구나 참여할 수 있는 Open Project입니다.
@@ -52,6 +52,8 @@ streamlit run main.py
 
 ## 함께 작업한 분들
 이 프로젝트에 기여해 주신 분들의 명단입니다:
+
+- Patrick Seo
 
 <!-- 
 참여자 정보는 다음과 같은 형식으로 추가됩니다:
