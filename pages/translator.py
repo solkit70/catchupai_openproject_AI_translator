@@ -10,18 +10,21 @@ from openai import OpenAI
 import langdetect
 from dotenv import load_dotenv
 
+# Streamlit 페이지 설정을 가장 먼저 실행
+st.set_page_config(
+    page_title="Catch Up AI Translator",
+    page_icon="🎯",
+    layout="centered"
+)
+
 # .env 파일 로드
 load_dotenv()
 
-# OpenAI API 키 설정
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-if not OPENAI_API_KEY:
-    st.error("OpenAI API 키가 설정되지 않았습니다. .env 파일을 확인해주세요.")
-    st.stop()
-
-client = OpenAI(api_key=OPENAI_API_KEY)
-
-# 상태 관리 초기화
+# 세션 상태 초기화
+if "openai_api_key" not in st.session_state:
+    st.session_state.openai_api_key = os.getenv("OPENAI_API_KEY", "")
+if "is_api_key_valid" not in st.session_state:
+    st.session_state.is_api_key_valid = False
 if "input_text" not in st.session_state:
     st.session_state.input_text = ""
 if "output_text" not in st.session_state:
@@ -30,6 +33,73 @@ if "audio_file" not in st.session_state:
     st.session_state.audio_file = None
 if "detected_language" not in st.session_state:
     st.session_state.detected_language = None
+
+def validate_api_key(api_key):
+    """
+    OpenAI API 키의 유효성을 검사하는 함수
+    """
+    try:
+        client = OpenAI(api_key=api_key)
+        # 간단한 API 호출로 키 검증
+        response = client.chat.completions.create(
+            model="gpt-4",
+            messages=[{"role": "user", "content": "test"}],
+            max_tokens=5
+        )
+        return True
+    except Exception as e:
+        return False
+
+st.title("🌎 Catch Up AI Translator")
+
+# OpenAI API 키 설정 섹션
+st.markdown("""
+## OpenAI API 키 설정 ⚙️
+
+1. 아래 입력창에 OpenAI API 키를 입력해주세요.
+2. API 키를 붙여넣고 Enter 키를 누르세요.
+3. API 키가 유효하면 녹색 체크 표시가 나타납니다.
+
+API 키가 없으신가요? [OpenAI API 키 생성하기](https://platform.openai.com/account/api-keys)
+""")
+
+# API 키 입력 필드를 메인 화면으로 이동
+api_key_input = st.text_input(
+    "OpenAI API 키를 입력하세요",
+    type="password",
+    value=st.session_state.openai_api_key,
+    placeholder="OpenAI API Key",
+    help="API 키가 없다면 https://platform.openai.com/account/api-keys 에서 생성하실 수 있습니다."
+)
+
+if not api_key_input:
+    st.error("""
+    ⚠️ OpenAI API 키가 필요합니다!
+    
+    1. 위의 입력창에 OpenAI API 키를 입력해주세요.
+    2. API 키를 붙여넣고 Enter 키를 누르면 자동으로 검증됩니다.
+    3. 유효한 API 키를 입력하면 번역 기능을 사용하실 수 있습니다.
+    """)
+    st.stop()
+
+if api_key_input:
+    if api_key_input != st.session_state.openai_api_key:
+        st.session_state.openai_api_key = api_key_input
+        st.session_state.is_api_key_valid = validate_api_key(api_key_input)
+        if st.session_state.is_api_key_valid:
+            st.success("✅ API 키가 유효합니다!")
+        else:
+            st.error("❌ 유효하지 않은 API 키입니다.")
+elif not st.session_state.openai_api_key:
+    st.stop()
+
+# API 키가 유효하지 않으면 여기서 중단
+if not st.session_state.is_api_key_valid:
+    st.error("유효한 OpenAI API 키를 입력해주세요.")
+    st.stop()
+
+# OpenAI 클라이언트 초기화
+client = OpenAI(api_key=st.session_state.openai_api_key)
 
 def detect_language(text):
     """
@@ -76,7 +146,7 @@ def recognize_speech():
         st.info("🎤 말씀해 주세요... (마이크 조정 중)")
         recognizer.adjust_for_ambient_noise(source)
         st.info("🎤 이제 말씀하세요!")
-        audio = recognizer.listen(source, timeout=20)  # 녹음 시간을 20초로 설정
+        audio = recognizer.listen(source, timeout=30)  # 녹음 시간을 30초로 설정
         st.info("✨ 음성 처리 중...")
 
     try:
@@ -149,13 +219,6 @@ def play_audio(file_path):
         time.sleep(0.1)
 
 # Streamlit UI
-st.set_page_config(
-    page_title="Catch Up AI Translator",
-    page_icon="🎯",
-    layout="centered"
-)
-
-st.title("🌎 Catch Up AI Translator")
 st.markdown("""
     ### 사용 방법
     1. '음성 녹음 시작' 버튼을 클릭하세요
