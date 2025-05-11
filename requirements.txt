@@ -3,6 +3,6 @@ SpeechRecognition
 openai
 gTTS
 pygame
-PyAudio
+#PyAudio
 langdetect
 python-dotenv
