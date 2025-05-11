@@ -55,6 +55,7 @@ streamlit run main.py
 
 - Patrick Seo
 - 이홍범 (문법 검사기 기능 개선)
+- Wang-gon Kim
 
 <!-- 
 참여자 정보는 다음과 같은 형식으로 추가됩니다:
