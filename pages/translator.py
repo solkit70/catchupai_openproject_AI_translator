@@ -3,6 +3,8 @@ import speech_recognition as sr
 import json
 import threading
 import os
+import edge_tts
+import asyncio
 from gtts import gTTS
 import pygame
 import time
@@ -16,6 +18,20 @@ st.set_page_config(
     page_icon="🎯",
     layout="centered"
 )
+
+# Voice configurations
+AVAILABLE_VOICES = {
+    "ko": {
+        "ko-KR-SunHiNeural": "한국어 - 여성 (선히)",
+        "ko-KR-InJoonNeural": "한국어 - 남성 (인준)"
+    },
+    "en": {
+        "en-US-JennyNeural": "English - Female (US)",
+        "en-GB-SoniaNeural": "English - Female (UK)",
+        "en-US-GuyNeural": "English - Male (US)",
+        "en-GB-RyanNeural": "English - Male (UK)"
+    }
+}
 
 # .env 파일 로드
 load_dotenv()
@@ -33,6 +49,11 @@ if "audio_file" not in st.session_state:
     st.session_state.audio_file = None
 if "detected_language" not in st.session_state:
     st.session_state.detected_language = None
+if "selected_voice" not in st.session_state:
+    st.session_state.selected_voice = {
+        "ko": "ko-KR-SunHiNeural",
+        "en": "en-US-JennyNeural"
+    }
 
 def validate_api_key(api_key):
     """
@@ -186,6 +207,19 @@ def translate_text(text, source_lang):
         st.error(f"번역 중 오류가 발생했습니다: {str(e)}")
         return None
 
+async def text_to_speech(text, voice):
+    """
+    Edge TTS를 사용하여 텍스트를 음성으로 변환하는 함수
+    """
+    audio_file = "output.mp3"
+    communicate = edge_tts.Communicate(text, voice)
+    try:
+        await communicate.save(audio_file)
+        return audio_file
+    except Exception as e:
+        st.error(f"음성 변환 중 오류가 발생했습니다: {str(e)}")
+        return None
+
 def handle_translation(input_text):
     """
     번역 처리와 음성 변환을 관리하는 함수
@@ -200,11 +234,11 @@ def handle_translation(input_text):
         
         # 번역된 텍스트를 음성으로 변환
         target_lang = "ko" if source_lang == "en" else "en"
+        selected_voice = st.session_state.selected_voice[target_lang]
         try:
-            tts = gTTS(text=translated_text, lang=get_tts_language(target_lang))
-            audio_file = "output.mp3"
-            tts.save(audio_file)
-            st.session_state.audio_file = audio_file
+            audio_file = asyncio.run(text_to_speech(translated_text, selected_voice))
+            if audio_file:
+                st.session_state.audio_file = audio_file
         except Exception as e:
             st.error(f"음성 변환 중 오류가 발생했습니다: {str(e)}")
 
@@ -259,6 +293,45 @@ if st.session_state.audio_file and os.path.exists(st.session_state.audio_file):
     st.markdown("### 🎵 번역된 음성")
     with open(st.session_state.audio_file, "rb") as file:
         st.audio(file.read(), format="audio/mp3")
+
+# Voice selection in sidebar
+st.sidebar.markdown("### 🎤 음성 설정")
+
+# Korean voice selection
+st.sidebar.markdown("#### 한국어 음성")
+selected_ko_voice = st.sidebar.selectbox(
+    "한국어 음성을 선택하세요:",
+    options=list(AVAILABLE_VOICES["ko"].keys()),
+    format_func=lambda x: AVAILABLE_VOICES["ko"][x],
+    key="ko_voice"
+)
+if selected_ko_voice:
+    st.session_state.selected_voice["ko"] = selected_ko_voice
+
+# Preview Korean voice
+if st.sidebar.button("한국어 음성 미리듣기"):
+    preview_text = "안녕하세요, 저는 인공지능 번역기입니다."
+    audio_file = asyncio.run(text_to_speech(preview_text, selected_ko_voice))
+    if audio_file:
+        st.sidebar.audio(audio_file, format="audio/mp3")
+
+# English voice selection
+st.sidebar.markdown("#### English Voice")
+selected_en_voice = st.sidebar.selectbox(
+    "Select English voice:",
+    options=list(AVAILABLE_VOICES["en"].keys()),
+    format_func=lambda x: AVAILABLE_VOICES["en"][x],
+    key="en_voice"
+)
+if selected_en_voice:
+    st.session_state.selected_voice["en"] = selected_en_voice
+
+# Preview English voice
+if st.sidebar.button("Preview English Voice"):
+    preview_text = "Hello, I am an AI translator."
+    audio_file = asyncio.run(text_to_speech(preview_text, selected_en_voice))
+    if audio_file:
+        st.sidebar.audio(audio_file, format="audio/mp3")
 
 # 앱 종료 시 오디오 파일 정리
 if st.session_state.audio_file and os.path.exists(st.session_state.audio_file):
