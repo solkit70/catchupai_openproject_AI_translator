@@ -3,7 +3,12 @@ SpeechRecognition
 openai
 gTTS
 pygame
-PyAudio
+# PyAudio  # Not required for new implementation
 langdetect
 python-dotenv
 edge-tts
+fastapi
+uvicorn
+python-multipart
+websockets
+ffmpeg-python
