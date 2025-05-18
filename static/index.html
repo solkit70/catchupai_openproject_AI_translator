@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catch Up AI Translator</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .recording {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { background-color: rgba(239, 68, 68, 0.5); }
+            50% { background-color: rgba(239, 68, 68, 0.8); }
+            100% { background-color: rgba(239, 68, 68, 0.5); }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-4xl font-bold text-center mb-8">🌎 Catch Up AI Translator</h1>
+        
+        <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-6">
+            <div class="mb-6">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="apiKey">
+                    OpenAI API Key
+                </label>
+                <input type="password" id="apiKey" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Enter your OpenAI API key">
+                <button id="authenticateBtn" class="mt-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                    Authenticate
+                </button>
+            </div>
+
+            <div id="translatorControls" class="hidden">
+                <div class="mb-6">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="targetLang">
+                        Target Language
+                    </label>
+                    <select id="targetLang" class="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        <option value="ko">Korean</option>
+                        <option value="en">English</option>
+                        <option value="ja">Japanese</option>
+                        <option value="zh">Chinese</option>
+                        <option value="es">Spanish</option>
+                    </select>
+                </div>
+
+                <div class="mb-6">
+                    <button id="startRecording" class="w-full bg-green-500 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg focus:outline-none focus:shadow-outline">
+                        Start Recording
+                    </button>
+                    <button id="stopRecording" class="hidden w-full bg-red-500 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg focus:outline-none focus:shadow-outline mt-2">
+                        Stop Recording
+                    </button>
+                </div>
+
+                <div class="mb-4">
+                    <div class="mb-2">
+                        <span class="text-sm font-semibold text-gray-600">Detected Language:</span>
+                        <span id="detectedLang" class="ml-2 text-sm text-gray-800">-</span>
+                    </div>
+                    <div class="border rounded-lg p-4 bg-gray-50">
+                        <div class="mb-4">
+                            <h3 class="text-sm font-semibold text-gray-600 mb-2">Original Text:</h3>
+                            <p id="originalText" class="text-gray-800">-</p>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-semibold text-gray-600 mb-2">Translated Text:</h3>
+                            <p id="translatedText" class="text-gray-800">-</p>
+                        </div>
+                    </div>
+                </div>
+
+                <audio id="translatedAudio" controls class="w-full"></audio>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let mediaRecorder;
+        let audioChunks = [];
+        let ws;
+        
+        document.getElementById('authenticateBtn').addEventListener('click', function() {
+            const apiKey = document.getElementById('apiKey').value;
+            if (apiKey) {
+                // In a real app, validate the API key here
+                document.getElementById('translatorControls').classList.remove('hidden');
+                initializeWebSocket();
+            }
+        });
+
+        function initializeWebSocket() {
+            const clientId = 'client-' + Math.random().toString(36).substr(2, 9);
+            ws = new WebSocket(`ws://localhost:8000/ws/${clientId}`);
+            
+            ws.onmessage = function(event) {
+                const response = JSON.parse(event.data);
+                document.getElementById('detectedLang').textContent = response.detected_language;
+                document.getElementById('originalText').textContent = response.original;
+                document.getElementById('translatedText').textContent = response.translated;
+            };
+        }
+
+        document.getElementById('startRecording').addEventListener('click', async function() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = function(event) {
+                    audioChunks.push(event.data);
+                };
+
+                mediaRecorder.onstop = async function() {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    const reader = new FileReader();
+                    reader.readAsDataURL(audioBlob);
+                    reader.onloadend = function() {
+                        const base64Audio = reader.result.split(',')[1];
+                        ws.send(JSON.stringify({
+                            type: 'audio',
+                            data: base64Audio,
+                            target_lang: document.getElementById('targetLang').value
+                        }));
+                    };
+                };
+
+                mediaRecorder.start();
+                document.getElementById('startRecording').classList.add('hidden');
+                document.getElementById('stopRecording').classList.remove('hidden');
+                document.getElementById('stopRecording').classList.add('recording');
+            } catch (err) {
+                console.error('Error accessing microphone:', err);
+                alert('Error accessing microphone. Please ensure microphone permissions are granted.');
+            }
+        });
+
+        document.getElementById('stopRecording').addEventListener('click', function() {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+                document.getElementById('stopRecording').classList.remove('recording');
+                document.getElementById('stopRecording').classList.add('hidden');
+                document.getElementById('startRecording').classList.remove('hidden');
+            }
+        });
+    </script>
+</body>
+</html>

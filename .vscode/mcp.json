@@ -1,0 +1,8 @@
+{
+  "servers": [
+    {
+      "name": "mcp/time",
+      "image": "ghcr.io/modelcontextprotocol/time:latest"
+    }
+  ]
+}

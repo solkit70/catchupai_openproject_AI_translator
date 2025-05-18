@@ -1,0 +1,279 @@
+Catch Up AI Translator Prompt for Vibe Coding
+
+Project Name: Catch Up AI Translator
+
+Project Description:
+Develop a web application that uses the OpenAI Realtime API to perform real-time voice translation in a web browser. Users input an OpenAI API key for authentication, and can start/stop voice input. The app detects the input voice language, translating English to Korean and non-English languages to English by default, with an option for users to select a target language. The input voice is displayed as text in its original language, followed by the translated text, and then the translated text as voice output. The page title is "Catch Up AI Translator".
+
+Technology Stack:
+- Frontend: HTML, CSS, JavaScript (React recommended, Vanilla JS acceptable)
+- Backend: Node.js (for WebSocket and OpenAI Realtime API integration)
+- Libraries:
+  - `ws` (Node.js WebSocket)
+  - `fluent-ffmpeg` and `@ffmpeg-installer/ffmpeg` (audio conversion)
+  - OpenAI Realtime API (WebSocket-based)
+- Audio Processing: Web Audio API, MediaRecorder API
+- Language Detection: Use OpenAI API or external API (e.g., Google Cloud Speech-to-Text or DeepL API)
+
+Requirements:
+
+1. Page Title and UI:
+   - Title: "Catch Up AI Translator"
+   - Clean, intuitive UI (centered layout, modern fonts, responsive design)
+   - Components:
+     - OpenAI API key input field and "Authenticate" button
+     - Language selection dropdown (default: auto-detect; options: English, Korean, Japanese, Chinese, Spanish, etc.)
+     - "Start Recording" and "Stop Recording" buttons
+     - Display area for original voice text
+     - Display area for translated text
+     - `<audio>` element for translated voice playback
+     - Status message display (e.g., "Recording...", "Processing...", "API Key Invalid")
+
+2. API Key Authentication:
+   - Accept OpenAI API key input from the frontend and send to backend
+   - Backend validates the key with a test request to OpenAI Realtime API
+   - Enable translation features if valid; show error message if invalid
+
+3. Voice Input:
+   - Use `MediaRecorder` API to capture microphone audio in the browser
+   - "Start Recording" initiates recording; "Stop Recording" stops it
+   - Audio format: 16kHz, mono, PCM16 (per OpenAI Realtime API requirements)
+   - Stream recorded audio to backend via WebSocket
+
+4. Language Detection and Translation:
+   - Auto-detect input voice language:
+     - Use OpenAI Realtime API transcription or a separate language detection API
+     - Display detected language in UI (e.g., "Detected: English")
+   - Translation rules:
+     - English input → Translate to Korean
+     - Non-English input → Translate to English (default)
+     - If user selects a target language via dropdown, translate to that language
+   - Translation prompt example:
+
+
+5. Output Processing:
+- Input voice → Original text (in detected language) → Display in UI
+- Translated text → Display in UI
+- Translated voice → Play in `<audio>` element
+- Output sequence:
+1. "Original: [original text]" (e.g., "Original: Hello, how are you?")
+2. "Translated: [translated text]" (e.g., "Translated: 안녕하세요, 잘 지내세요?")
+3. Play translated voice
+
+6. Backend:
+- Node.js server handles WebSocket communication between client and OpenAI Realtime API
+- Convert input WebM audio to PCM16 using `fluent-ffmpeg`
+- Maintain WebSocket connection with OpenAI Realtime API
+- Process API responses:
+- `response.audio_transcript.delta`: Original and translated text
+- `response.audio.delta`: Translated audio
+- Send results to client
+
+7. Error Handling:
+- Handle microphone access failure, invalid API key, network issues, language detection failure
+- Display user-friendly messages (e.g., "Invalid API Key. Please check and try again.")
+
+8. Security:
+- Discard API key after sending to backend (do not store in browser memory)
+- Use HTTPS and WSS for production
+
+Implementation Guidelines:
+- Frontend:
+- React components:
+- `ApiKeyInput`: API key input and authentication
+- `LanguageSelector`: Target language selection
+- `AudioRecorder`: Start/stop voice recording
+- `TranslationDisplay`: Original text, translated text, and audio playback
+- Connect to backend via WebSocket client
+- Manage state: recording status, API key validity, detected language
+- Backend:
+- Serve `index.html` at `/`
+- WebSocket endpoint: `/ws` for client connections
+- OpenAI Realtime API WebSocket URL: `wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview`
+- Use FFmpeg for audio conversion
+- Styling:
+- Modern, clean design (e.g., Tailwind CSS or CSS modules)
+- Responsive layout (mobile and desktop support)
+- Performance:
+- Send audio chunks every 100ms to minimize latency
+- Implement WebSocket reconnection logic
+
+Sample Workflow:
+1. User enters API key → Clicks "Authenticate" → Backend validates key
+2. If valid, enable recording and language selection UI
+3. User clicks "Start Recording" → Speaks "Hello, how are you?"
+4. Language detection: English → UI shows "Detected: English"
+5. Display: "Original: Hello, how are you?"
+6. Display: "Translated: 안녕하세요, 잘 지내세요?"
+7. Play translated audio
+8. User selects Japanese in dropdown → Next input translates to Japanese
+
+Additional References:
+- OpenAI Realtime API Documentation: https://platform.openai.com/docs/realtime
+- FFmpeg Installation: `@ffmpeg-installer/ffmpeg` or system FFmpeg
+- Language Detection: Use OpenAI API or Google Cloud Speech-to-Text API
+
+Instructions for Vibe Coding AI:
+- Generate a complete full-stack application based on the above requirements
+- Provide frontend and backend code in separate files (`src/client`, `src/server`)
+- Include a `README.md` with installation and running instructions:
+```markdown
+# Catch Up AI Translator
+## Installation
+1. `npm install`
+2. Install FFmpeg (`brew install ffmpeg` or `@ffmpeg-installer/ffmpeg`)
+## Running
+1. `node server.js`
+2. Open `http://localhost:3000` in a browser
+
+
+### 다운로드 방법
+1. **수동 저장**:
+   - 위 내용을 복사하여 텍스트 편집기(예: Notepad, VS Code)에 붙여넣기.
+   - 파일을 `CatchUpAITranslatorPrompt.txt`로 저장.
+
+2. **자동 다운로드 (브라우저 기반)**:
+   - 아래 JavaScript 코드를 브라우저 콘솔에 붙여넣으면 파일이 자동 다운로드됩니다:
+     ```javascript
+     const content = `Catch Up AI Translator Prompt for Vibe Coding\n\nProject Name: Catch Up AI Translator\n\nProject Description:\nDevelop a web application that uses the OpenAI Realtime API to perform real-time voice translation in a web browser. Users input an OpenAI API key for authentication, and can start/stop voice input. The app detects the input voice language, translating English to Korean and non-English languages to English by default, with an option for users to select a target language. The input voice is displayed as text in its original language, followed by the translated text, and then the translated text as voice output. The page title is "Catch Up AI Translator".\n\nTechnology Stack:\n- Frontend: HTML, CSS, JavaScript (React recommended, Vanilla JS acceptable)\n- Backend: Node.js (for WebSocket and OpenAI Realtime API integration)\n- Libraries:\n  - \`ws\` (Node.js WebSocket)\n  - \`fluent-ffmpeg\` and \`@ffmpeg-installer/ffmpeg\` (audio conversion)\n  - OpenAI Realtime API (WebSocket-based)\n- Audio Processing: Web Audio API, MediaRecorder API\n- Language Detection: Use OpenAI API or external API (e.g., Google Cloud Speech-to-Text or DeepL API)\n\nRequirements:\n\n1. Page Title and UI:\n   - Title: "Catch Up AI Translator"\n   - Clean, intuitive UI (centered layout, modern fonts, responsive design)\n   - Components:\n     - OpenAI API key input field and "Authenticate" button\n     - Language selection dropdown (default: auto-detect; options: English, Korean, Japanese, Chinese, Spanish, etc.)\n     - "Start Recording" and "Stop Recording" buttons\n     - Display area for original voice text\n     - Display area for translated text\n     - \`<audio>\` element for translated voice playback\n     - Status message display (e.g., "Recording...", "Processing...", "API Key Invalid")\n\n2. API Key Authentication:\n   - Accept OpenAI API key input from the frontend and send to backend\n   - Backend validates the key with a test request to OpenAI Realtime API\n   - Enable translation features if valid; show error message if invalid\n\n3. Voice Input:\n   - Use \`MediaRecorder\` API to capture microphone audio in the browser\n   - "Start Recording" initiates recording; "Stop Recording" stops it\n   - Audio format: 16kHz, mono, PCM16 (per OpenAI Realtime API requirements)\n   - Stream recorded audio to backend via WebSocket\n\n4. Language Detection and Translation:\n   - Auto-detect input voice language:\n     - Use OpenAI Realtime API transcription or a separate language detection API\n     - Display detected language in UI (e.g., "Detected: English")\n   - Translation rules:\n     - English input → Translate to Korean\n     - Non-English input → Translate to English (default)\n     - If user selects a target language via dropdown, translate to that language\n   - Translation prompt example:\n     \`\`\`\n     You are a translation machine. Detect the input language from the audio. If the input language is English, translate to Korean. If the input language is not English, translate to English unless a specific target language is specified. Provide the detected language, original transcript, translated text, and translated audio in real-time.\n     \`\`\`\n\n5. Output Processing:\n   - Input voice → Original text (in detected language) → Display in UI\n   - Translated text → Display in UI\n   - Translated voice → Play in \`<audio>\` element\n   - Output sequence:\n     1. "Original: [original text]" (e.g., "Original: Hello, how are you?")\n     2. "Translated: [translated text]" (e.g., "Translated: 안녕하세요, 잘 지내세요?")\n     3. Play translated voice\n\n6. Backend:\n   - Node.js server handles WebSocket communication between client and OpenAI Realtime API\n   - Convert input WebM audio to PCM16 using \`fluent-ffmpeg\`\n   - Maintain WebSocket connection with OpenAI Realtime API\n   - Process API responses:\n     - \`response.audio_transcript.delta\`: Original and translated text\n     - \`response.audio.delta\`: Translated audio\n   - Send results to client\n\n7. Error Handling:\n   - Handle microphone access failure, invalid API key, network issues, language detection failure\n   - Display user-friendly messages (e.g., "Invalid API Key. Please check and try again.")\n\n8. Security:\n   - Discard API key after sending to backend (do not store in browser memory)\n   - Use HTTPS and WSS for production\n\nImplementation Guidelines:\n- Frontend:\n  - React components:\n    - \`ApiKeyInput\`: API key input and authentication\n    - \`LanguageSelector\`: Target language selection\n    - \`AudioRecorder\`: Start/stop voice recording\n    - \`TranslationDisplay\`: Original text, translated text, and audio playback\n  - Connect to backend via WebSocket client\n  - Manage state: recording status, API key validity, detected language\n- Backend:\n  - Serve \`index.html\` at \`/\`\n  - WebSocket endpoint: \`/ws\` for client connections\n  - OpenAI Realtime API WebSocket URL: \`wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview\`\n  - Use FFmpeg for audio conversion\n- Styling:\n  - Modern, clean design (e.g., Tailwind CSS or CSS modules)\n  - Responsive layout (mobile and desktop support)\n- Performance:\n  - Send audio chunks every 100ms to minimize latency\n  - Implement WebSocket reconnection logic\n\nSample Workflow:\n1. User enters API key → Clicks "Authenticate" → Backend validates key\n2. If valid, enable recording and language selection UI\n3. User clicks "Start Recording" → Speaks "Hello, how are you?"\n4. Language detection: English → UI shows "Detected: English"\n5. Display: "Original: Hello, how are you?"\n6. Display: "Translated: 안녕하세요, 잘 지내세요?"\n7. Play translated audio\n8. User selects Japanese in dropdown → Next input translates to Japanese\n\nAdditional References:\n- OpenAI Realtime API Documentation: https://platform.openai.com/docs/realtime\n- FFmpeg Installation: \`@ffmpeg-installer/ffmpeg\` or system FFmpeg\n- Language Detection: Use OpenAI API or Google Cloud Speech-to-Text API\n\nInstructions for Vibe Coding AI:\n- Generate a complete full-stack application based on the above requirements\n- Provide frontend and backend code in separate files (\`src/client\`, \`src/server\`)\n- Include a \`README.md\` with installation and running instructions:\n  \`\`\`markdown\n  # Catch Up AI Translator\n  ## Installation\n  1. \`npm install\`\n  2. Install FFmpeg (\`brew install ffmpeg\` or \`@ffmpeg-installer/ffmpeg\`)\n  ## Running\n  1. \`node server.js\`\n  2. Open \`http://localhost:3000\` in a browser\n  \`\`\`\n- Include all files (\`index.html\`, \`App.js\`, \`server.js\`, CSS, etc.) in the project structure\n- Add comments in code for readability\n- Test the application using Vibe Coding's preview feature\n\nCompletion Criteria:\n- Users can authenticate with an API key and use translation features\n- Voice input can be started/stopped\n- Language detection and translation rules (English→Korean, others→English, user-selected) are followed\n- Original text, translated text, and translated audio are displayed in sequence\n- UI is intuitive and responsive\n- Error handling and user feedback are implemented`;
+     const blob = new Blob([content], { type: 'text/plain' });
+     const link = document.createElement('a');
+     link.href = URL.createObjectURL(blob);
+     link.download = 'CatchUpAITranslatorPrompt.txt';
+     link.click();
+
+     Vibe Coding 프롬프트: Catch Up AI Translator
+프로젝트 이름: Catch Up AI Translator
+
+프로젝트 설명:
+웹 브라우저에서 사용자의 음성을 입력받아 OpenAI Realtime API를 사용해 실시간 번역을 수행하는 애플리케이션을 개발합니다. 사용자는 OpenAI API 키를 입력해 인증하며, 음성 입력을 시작/중지할 수 있습니다. 입력 음성의 언어를 자동 감지하고, 영어는 한국어로, 영어 이외의 언어는 기본적으로 영어로 번역합니다. 사용자는 번역 대상 언어를 선택할 수도 있습니다. 입력 음성은 먼저 원문 텍스트로 표시되고, 번역된 텍스트와 음성으로 출력됩니다.
+
+기술 스택:
+
+프론트엔드: HTML, CSS, JavaScript (React 권장, 필요 시 Vanilla JS 가능)
+백엔드: Node.js (WebSocket 및 OpenAI Realtime API 연결)
+라이브러리:
+ws (Node.js WebSocket)
+fluent-ffmpeg 및 @ffmpeg-installer/ffmpeg (오디오 변환)
+OpenAI Realtime API (WebSocket 기반)
+오디오 처리: Web Audio API, MediaRecorder API
+언어 감지: OpenAI API 또는 별도의 언어 감지 API (예: Google Cloud Speech-to-Text 또는 DeepL API) 사용 가능
+요구사항:
+
+페이지 제목 및 UI:
+페이지 제목: "Catch Up AI Translator"
+깔끔하고 직관적인 UI (예: 중앙 정렬, 모던 폰트, 반응형 디자인)
+구성 요소:
+OpenAI API 키 입력 필드와 "인증" 버튼
+언어 선택 드롭다운 (기본: 자동 감지, 수동 선택 가능: 영어, 한국어, 일본어, 중국어, 스페인어 등)
+"Start Recording" 및 "Stop Recording" 버튼
+입력 음성의 원문 텍스트 표시 영역
+번역된 텍스트 표시 영역
+번역된 음성을 재생할 <audio> 요소
+상태 메시지 표시 (예: "Recording...", "Processing...", "API Key Invalid")
+API 키 인증:
+사용자가 입력한 OpenAI API 키를 프론트엔드에서 입력받아 백엔드로 전송.
+백엔드에서 API 키의 유효성을 OpenAI Realtime API에 테스트 요청으로 확인.
+유효한 경우 번역 기능 활성화, 유효하지 않은 경우 에러 메시지 표시.
+음성 입력:
+브라우저의 MediaRecorder API를 사용해 마이크 음성을 캡처.
+"Start Recording" 버튼으로 녹음 시작, "Stop Recording" 버튼으로 중지.
+오디오 형식: 16kHz, 모노, PCM16 (OpenAI Realtime API 요구사항).
+녹음된 오디오는 WebSocket을 통해 백엔드로 스트리밍.
+언어 감지 및 번역:
+입력 음성의 언어를 자동 감지:
+OpenAI Realtime API의 텍스트 변환 결과를 사용하거나, 별도의 언어 감지 API 호출.
+감지된 언어를 UI에 표시 (예: "Detected: English").
+번역 규칙:
+입력 언어가 영어 → 한국어로 번역.
+입력 언어가 영어 이외 → 기본적으로 영어로 번역.
+사용자가 드롭다운에서 특정 언어를 선택한 경우, 해당 언어로 번역.
+번역 프롬프트 예:
+text
+
+Copy
+You are a translation machine. Detect the input language from the audio. If the input language is English, translate to Korean. If the input language is not English, translate to English unless a specific target language is specified. Provide the detected language, original transcript, translated text, and translated audio in real-time.
+출력 처리:
+입력 음성 → 원문 텍스트 (감지된 언어로) → UI에 표시.
+번역된 텍스트 → UI에 표시.
+번역된 음성 → <audio> 요소에서 자동 재생.
+출력 순서:
+"Original: [원문 텍스트]" (예: "Original: Hello, how are you?")
+"Translated: [번역 텍스트]" (예: "Translated: 안녕하세요, 잘 지내세요?")
+번역 음성 재생.
+백엔드:
+Node.js 서버에서 WebSocket을 사용해 클라이언트와 OpenAI Realtime API 간 오디오 및 데이터 중계.
+오디오 변환: 입력 WebM을 PCM16으로 변환 (fluent-ffmpeg 사용).
+OpenAI Realtime API와 WebSocket 연결 유지.
+API 응답 처리:
+response.audio_transcript.delta: 원문 및 번역 텍스트.
+response.audio.delta: 번역 음성.
+클라이언트로 결과 전송.
+에러 처리:
+마이크 접근 실패, API 키 무효, 네트워크 오류, 언어 감지 실패 시 사용자에게 알림.
+예: "Invalid API Key. Please check and try again."
+보안:
+API 키는 클라이언트에서 백엔드로 전송 후 즉시 폐기 (브라우저 메모리에 저장하지 않음).
+프로덕션에서는 HTTPS와 WSS 사용.
+구체적인 구현 지침:
+
+프론트엔드:
+React 컴포넌트 구조:
+ApiKeyInput: API 키 입력 및 인증.
+LanguageSelector: 번역 대상 언어 선택.
+AudioRecorder: 음성 녹음 시작/중지.
+TranslationDisplay: 원문, 번역 텍스트, 음성 출력.
+WebSocket 클라이언트로 백엔드와 연결.
+상태 관리: 녹음 상태, API 키 유효성, 언어 감지 결과.
+백엔드:
+/ 엔드포인트로 index.html 제공.
+WebSocket 엔드포인트: /ws로 클라이언트 연결.
+OpenAI Realtime API WebSocket URL: wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview.
+FFmpeg로 오디오 변환.
+스타일링:
+모던하고 깔끔한 디자인 (예: Tailwind CSS 또는 CSS 모듈).
+반응형 레이아웃 (모바일 및 데스크톱 지원).
+성능:
+오디오 청크를 100ms 단위로 전송해 지연 최소화.
+WebSocket 재연결 로직 추가.
+샘플 워크플로우:
+
+사용자가 API 키 입력 → "Authenticate" 클릭 → 백엔드에서 유효성 확인.
+유효한 키면 녹음 및 언어 선택 UI 활성화.
+사용자가 "Start Recording" 클릭 → 마이크로 "Hello, how are you?" 입력.
+언어 감지: 영어 → UI에 "Detected: English" 표시.
+원문: "Original: Hello, how are you?" 표시.
+번역: "Translated: 안녕하세요, 잘 지내세요?" 표시.
+번역 음성 재생.
+사용자가 드롭다운에서 일본어 선택 → 다음 입력은 일본어로 번역.
+추가 참고:
+
+OpenAI Realtime API 문서: platform.openai.com/docs/realtime
+FFmpeg 설치: @ffmpeg-installer/ffmpeg 또는 시스템 FFmpeg.
+언어 감지: OpenAI API 내에서 처리하거나 Google Cloud Speech-to-Text API 사용 가능.
+Vibe Coding AI에게 전달할 지침:
+
+위 요구사항을 기반으로 완전한 풀스택 애플리케이션 생성.
+프론트엔드와 백엔드 코드를 별도 파일로 제공 (src/client, src/server).
+README.md에 설치 및 실행 방법 포함:
+markdown
+
+Copy
+# Catch Up AI Translator
+## 설치
+1. `npm install`
+2. FFmpeg 설치 (`brew install ffmpeg` 또는 `@ffmpeg-installer/ffmpeg`)
+## 실행
+1. `node server.js`
+2. 브라우저에서 `http://localhost:3000` 접속
+모든 파일 (index.html, App.js, server.js, CSS 등)을 포함한 프로젝트 구조 생성.
+코드에 주석 추가로 가독성 향상.
+테스트: Vibe Coding의 미리보기 기능으로 UI 및 기능 확인.
+완료 기준:
+
+사용자가 API 키를 입력해 인증 후 번역 기능 사용 가능.
+음성 입력 시작/중지 가능.
+언어 감지 및 번역 규칙 (영어→한국어, 기타→영어, 사용자 선택) 준수.
+원문 텍스트, 번역 텍스트, 번역 음성 순서대로 출력.
+UI가 직관적이고 반응형.
+에러 처리 및 사용자 피드백 제공.
